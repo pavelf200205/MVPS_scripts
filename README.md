@@ -1,3 +1,4 @@
 Repository is under construction!
 
 The create_env_windows.bat is a modified version of the create_env.sh script from the SuperNormal repository. The PyTorch version was updated to 2.8.0, so everything should hopefully work with Nvidia RTX5000-series Blackwell GPUs. The PyVista version was updated as it was causing problems. The pyembree was downgraded to 0.1.12 as it is the latest release on PyPi to support python 3.10 (required for PyTorch 2.8.0). Pyembree installation was placed on top of the list as it downgrades the 'setuptools' and 'wheel' modules during installation, thus fixing the problem during the installation of nerfacc.
+Tested of Windows 10 22H2 with CUDA 12.9. Conda was installed via miniforge distribution.
