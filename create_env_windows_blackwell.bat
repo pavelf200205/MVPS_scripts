@@ -1,14 +1,14 @@
-conda deactivate
-conda remove -y -n sn --all
-conda create -y -n sn python=3.10
-conda activate sn
+CALL conda deactivate
+CALL conda remove -y -n sn --all
+CALL conda create -y -n sn python=3.10
+CALL conda activate sn
 
 python -m pip install pip==25.2
 pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu129
 
-rem Install pyembree first so that it downgrades the 'setuptools'
-rem and 'wheel' so 'nerfacc' installation doesn't fail.
-rem pip install setuptools==60.10.0 wheel==0.37.1
+REM Install pyembree first so that it downgrades the 'setuptools'
+REM and 'wheel' so 'nerfacc' installation doesn't fail.
+REM pip install setuptools==60.10.0 wheel==0.37.1
 pip install pyembree==0.1.12
 
 pip install -e ./third_parties/nerfacc-0.3.5/nerfacc-0.3.5/
