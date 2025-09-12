@@ -3,12 +3,15 @@ conda remove -y -n sn --all
 conda create -y -n sn python=3.10
 conda activate sn
 
-python -m pip install pip==25.2
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu129
+conda install -c "nvidia/label/cuda-12.9.1" cuda-toolkit
 
-rem Install pyembree first so that it downgrades the 'setuptools'
-rem and 'wheel' so 'nerfacc' installation doesn't fail.
-rem pip install setuptools==60.10.0 wheel==0.37.1
+python -m pip install pip==25.2
+
+pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu129
+
+# Install pyembree first so that it downgrades the 'setuptools'
+# and 'wheel' so 'nerfacc' installation doesn't fail.
+# pip install setuptools==60.10.0 wheel==0.37.1
 pip install pyembree==0.1.12
 
 pip install -e ./third_parties/nerfacc-0.3.5/nerfacc-0.3.5/
