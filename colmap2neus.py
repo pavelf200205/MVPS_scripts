@@ -1,6 +1,6 @@
 import os.path
 import xml
-from bs4 import BeautifulSoup  # pip install beautifulsoup4 lxml
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -42,38 +42,6 @@ def quaternion_to_rotation_matrix(qw, qx, qy, qz):
        [2*qx*qz - 2*qy*qw, 2*qy*qz + 2*qx*qw, 1 - 2*qx**2 - 2*qy**2]
     ])
     return R
-
-def set_axes_equal(ax):
-    """Set 3D plot axes to have equal scale."""
-    limits = np.array([ax.get_xlim3d(), ax.get_ylim3d(), ax.get_zlim3d()])
-    ranges = limits[:, 1] - limits[:, 0]
-    centers = np.mean(limits, axis=1)
-    max_range = 0.5 * max(ranges)
-    ax.set_xlim([centers[0] - max_range, centers[0] + max_range])
-    ax.set_ylim([centers[1] - max_range, centers[1] + max_range])
-    ax.set_zlim([centers[2] - max_range, centers[2] + max_range])
-
-def plot_cameras(R_list, t_list):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-
-    for R, t in zip(R_list, t_list):
-        # Camera center in world coordinates
-        camera_center = -R.T @ t
-        ax.scatter(*camera_center, color='red')
-        # Camera viewing direction
-        view_dir = R[2, :]  # Principal axis (z-axis of the camera)
-        ax.quiver(*camera_center, *view_dir, length=0.8, color='blue')
-
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
-    # Adjust axes to be equal
-    set_axes_equal(ax)
-
-    plt.legend(loc='best')
-    plt.show()
 
 class ColmapPoseLoader:
     def __init__(self, model_path, camera2object_ratio):
@@ -125,7 +93,6 @@ class ColmapPoseLoader:
             camera_sphere[f"world_mat_{view_id}"] = make4x4(K) @ W2C
 
         offset, scale = normalize_camera(R_list, t_list, camera2object_ratio=camera2object_ratio)
-        plot_cameras(R_list, t_list)
         print("offset", offset, "scale", scale)
         num_views = len(R_list)
 
@@ -135,56 +102,6 @@ class ColmapPoseLoader:
         for im_idx in range(num_views):
             camera_sphere[f"scale_mat_{im_idx}"] = scale_mat
         np.savez(os.path.join(model_path, "cameras_sphere.npz"), **camera_sphere)
-
-
-class MetashapePoseLoader:
-    def __init__(self, xml_path, camera2object_ratio):
-        with open(xml_path, "r") as f:
-            xml_data = f.read()
-        bs_data = BeautifulSoup(xml_data, "xml")
-        c_unique = bs_data.find_all('resolution')
-        img_width = int(c_unique[0].get("width"))
-        img_height = int(c_unique[0].get("height"))
-        c_intrinsics = bs_data.find_all('calibration')
-        f = float(c_intrinsics[0].find("f").text)
-        cx_offset = float(c_intrinsics[0].find("cx").text)
-        cy_offset = float(c_intrinsics[0].find("cy").text)
-        K = np.array([[f, 0, (img_width-1)/2 + cx_offset],
-                        [0, f, (img_height-1)/2 + cy_offset],
-                        [0, 0, 1]])
-
-        b_unique = bs_data.find_all('camera')
-        R_list = []
-        t_list = []
-        C2W_list = []
-        camera_sphere = dict()
-        for tag in b_unique:
-            img_name = tag.get("label")
-            view_idx = int(img_name.split("_")[-1])
-            # camera to world transform
-            C2W = np.array([float(i) for i in tag.find("transform").text.split(" ")]).reshape((4, 4))
-            C2W_list.append(C2W)
-
-            assert int(img_name) == view_idx
-
-            W2C = np.linalg.inv(C2W)
-            R_list.append(W2C[:3, :3])
-            t_list.append(W2C[:3, 3])
-
-            camera_sphere[f"world_mat_{view_idx}"] = make4x4(K) @ W2C
-
-        offset, scale = normalize_camera(R_list, t_list, camera2object_ratio=camera2object_ratio)
-        print("offset", offset, "scale", scale)
-        num_views = len(C2W_list)
-
-        scale_mat = np.eye(4)
-        scale_mat[:3, :3] *= scale
-        scale_mat[:3, 3] = offset
-        for im_idx in range(num_views):
-            camera_sphere[f"scale_mat_{im_idx}"] = scale_mat
-
-        data_dir = os.path.dirname(xml_path)
-        np.savez(os.path.join(data_dir, 'cameras_sphere.npz'), **camera_sphere)
 
 
 if __name__=="__main__":
