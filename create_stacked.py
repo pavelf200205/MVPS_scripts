@@ -21,7 +21,7 @@ def process_subfolders(parent_folder: Path, target_folder: Path, mode: str):
 
                 # Construct ImageMagick command
                 command = [
-                    "convert",
+                    "magick",
                     "*.jpg",
                     "-evaluate-sequence", mode,
                     "stacked.jpg"
