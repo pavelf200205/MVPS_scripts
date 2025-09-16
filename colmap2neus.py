@@ -1,10 +1,7 @@
 import os.path
-import xml
-
 import numpy as np
 import os
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+
 
 # details of camera normalization can be found in Sec. C.3 in https://openaccess.thecvf.com/content/CVPR2023/supplemental/Cao_Multi-View_Azimuth_Stereo_CVPR_2023_supplemental.pdf
 def normalize_camera(R_list, t_list, camera2object_ratio=3):
